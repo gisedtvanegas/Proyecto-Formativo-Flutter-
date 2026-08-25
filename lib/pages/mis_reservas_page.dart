@@ -6,7 +6,8 @@ import 'login_page.dart';
 import 'widgets/app_background.dart';
 
 class MisReservasPage extends StatefulWidget {
-  const MisReservasPage({super.key});
+  final String? nombreUsuario;
+  const MisReservasPage({super.key, this.nombreUsuario});
 
   @override
   State<MisReservasPage> createState() => _MisReservasPageState();
@@ -19,6 +20,10 @@ class _MisReservasPageState extends State<MisReservasPage> {
   bool _isLoading = true;
   String? _errorMessage;
   bool _sessionExpired = false;
+
+  // Nombre del usuario: viene del login o se obtiene de /ReservaUsuario
+  String? get _nombre =>
+      widget.nombreUsuario ?? AuthService().nombreUsuario;
 
   @override
   void initState() {
@@ -60,7 +65,23 @@ class _MisReservasPageState extends State<MisReservasPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mis Reservas'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Mis Reservas',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            if (_nombre != null && _nombre!.isNotEmpty)
+              Text(
+                'Hola, $_nombre!',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+          ],
+        ),
         backgroundColor: const Color(0xFF5F72A6),
         foregroundColor: Colors.white,
         actions: [

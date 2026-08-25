@@ -2,6 +2,7 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart';
 import '../config/api_config.dart';
 import '../models/reserva.dart';
+import 'auth_service.dart';
 import 'client/http_client_factory.dart';
 import 'package:http/http.dart' as http;
 
@@ -26,23 +27,31 @@ class ReservaService {
       print('Content-Type: ${response.headers['content-type']}');
       print('HTML length: ${response.body.length} bytes');
 
-      // Si el servidor redirigió a login, la sesión no está activa
+      // Detectar si el backend redirigió al formulario de login (sesión expirada)
+      final doc = html_parser.parse(response.body);
+      final hayFormLogin = doc.querySelector('form[action*="Iniciar"]') != null;
       final bodyLower = response.body.toLowerCase();
-      if (bodyLower.contains('iniciar sesion') ||
-          bodyLower.contains('iniciar sesión') ||
-          bodyLower.contains('ingresar') && bodyLower.contains('contraseña')) {
-        print('WARN: La respuesta parece ser la página de Login — sesión no activa.');
+
+      if (hayFormLogin ||
+          (bodyLower.contains('inicio de sesión') &&
+              bodyLower.contains('placeholder'))) {
+        print('WARN: La respuesta es la página de Login — sesión no activa.');
         return ReservaResult.sessionExpired();
       }
 
       if (response.statusCode >= 200 && response.statusCode < 400) {
-        // Log de las primeras líneas del HTML para diagnóstico
-        final preview = response.body.length > 500
-            ? response.body.substring(0, 500)
+        // Log de las primeras 600 chars para diagnóstico real
+        final preview = response.body.length > 600
+            ? response.body.substring(0, 600)
             : response.body;
-        print('HTML preview (500 chars): $preview');
+        print('HTML preview (600 chars): $preview');
 
-        final reservas = _parseHtml(response.body);
+        // ── Intentar extraer nombre del usuario del HTML autenticado ──────────
+        // Esta es la ÚNICA página autenticada disponible — el JSP puede mostrar
+        // el nombre del usuario en la barra de navegación o en el cuerpo.
+        _extraerYGuardarNombre(doc, response.body);
+
+        final reservas = _parseHtml(doc);
         print('Reservas encontradas: ${reservas.length}');
         return ReservaResult.success(reservas);
       }
@@ -55,12 +64,64 @@ class ReservaService {
     }
   }
 
-  List<Reserva> _parseHtml(String htmlContent) {
+  /// Extrae el nombre del usuario del HTML autenticado de /ReservaUsuario
+  /// y lo guarda en el singleton de AuthService.
+  void _extraerYGuardarNombre(dynamic doc, String rawHtml) {
+    // Solo sobreescribe si aún no tenemos nombre
+    if (AuthService().nombreUsuario != null &&
+        AuthService().nombreUsuario!.isNotEmpty) return;
+
+    // Selectores que suelen usarse en JSP para mostrar el usuario autenticado
+    final selectores = [
+      'span.usuario',
+      'span.nombre',
+      'span.nombre-usuario',
+      '.nombre-usuario',
+      '#nombreUsuario',
+      '#usuarioLogueado',
+      'p.usuario',
+      'li.usuario',
+      'a.usuario',
+    ];
+
+    for (final sel in selectores) {
+      final el = doc.querySelector(sel);
+      if (el != null) {
+        final texto = el.text.trim();
+        if (texto.isNotEmpty && texto.length < 60) {
+          print('[NOMBRE] Encontrado con selector "$sel": $texto');
+          AuthService().setNombreUsuario(texto);
+          return;
+        }
+      }
+    }
+
+    // Buscar con regex en el HTML bruto
+    final patterns = [
+      RegExp(r'hola[,:\s]+([A-Za-záéíóúÁÉÍÓÚñÑ\s]{2,40})', caseSensitive: false),
+      RegExp(r'bienvenido[/a]*[,:\s]+([A-Za-záéíóúÁÉÍÓÚñÑ\s]{2,40})', caseSensitive: false),
+    ];
+
+    for (final regex in patterns) {
+      final match = regex.firstMatch(rawHtml);
+      if (match != null) {
+        final nombre = match.group(1)?.trim().split(RegExp(r'[<!\n\r]')).first.trim();
+        if (nombre != null && nombre.isNotEmpty) {
+          print('[NOMBRE] Encontrado por regex: $nombre');
+          AuthService().setNombreUsuario(nombre);
+          return;
+        }
+      }
+    }
+
+    print('[NOMBRE] No se encontró el nombre en el HTML de /ReservaUsuario.');
+    print('[NOMBRE] El JSP no parece incluir el nombre del usuario en el HTML renderizado.');
+  }
+
+  List<Reserva> _parseHtml(Document document) {
     final List<Reserva> reservas = [];
 
     try {
-      final document = html_parser.parse(htmlContent);
-
       // ── Estrategia 1: buscar tabla con cabeceras de reserva ──
       final tables = document.getElementsByTagName('table');
       print('Tablas encontradas en HTML: ${tables.length}');

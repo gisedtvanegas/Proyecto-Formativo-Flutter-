@@ -44,7 +44,8 @@ class _LoginPageState extends State<LoginPage> {
       _errorMessage = null;
     });
 
-    final success = await AuthService().login(doc, pass);
+    // Usa LoginResult para obtener error real del backend y nombre del usuario
+    final result = await AuthService().login(doc, pass);
 
     if (!mounted) return;
 
@@ -52,13 +53,17 @@ class _LoginPageState extends State<LoginPage> {
       _isLoading = false;
     });
 
-    if (success) {
+    if (result.success) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const MisReservasPage()),
+        MaterialPageRoute(
+          builder: (_) => MisReservasPage(nombreUsuario: result.nombreUsuario),
+        ),
       );
     } else {
       setState(() {
-        _errorMessage = "Usuario o contraseña incorrectos, o error de conexión.";
+        // Muestra el mensaje exacto del backend (ej: "El documento no existe")
+        // o un mensaje genérico si no hubo mensaje específico
+        _errorMessage = result.errorMessage ?? "No se pudo iniciar sesión.";
       });
     }
   }
