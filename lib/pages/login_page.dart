@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'widgets/app_background.dart';
 import 'widgets/brand_header.dart';
 
+import '../services/auth_service.dart';
+import 'mis_reservas_page.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -12,9 +15,52 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   bool _hidePassword = true;
+  bool _isLoading = false;
+  String? _errorMessage;
 
-  void _openAdminHome() {
-    Navigator.of(context).pushReplacementNamed('/admin');
+  final TextEditingController _documentController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _documentController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _login() async {
+    final doc = _documentController.text.trim();
+    final pass = _passwordController.text;
+
+    if (doc.isEmpty || pass.isEmpty) {
+      setState(() {
+        _errorMessage = "Por favor ingrese documento y clave.";
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final success = await AuthService().login(doc, pass);
+
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (success) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const MisReservasPage()),
+      );
+    } else {
+      setState(() {
+        _errorMessage = "Usuario o contraseña incorrectos, o error de conexión.";
+      });
+    }
   }
 
   @override
@@ -38,10 +84,14 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 18),
                       _LoginCard(
                         hidePassword: _hidePassword,
+                        isLoading: _isLoading,
+                        errorMessage: _errorMessage,
+                        documentController: _documentController,
+                        passwordController: _passwordController,
                         onTogglePassword: () {
                           setState(() => _hidePassword = !_hidePassword);
                         },
-                        onLogin: _openAdminHome,
+                        onLogin: _login,
                       ),
                     ],
                   ),
@@ -110,11 +160,19 @@ class _LoginCardTitle extends StatelessWidget {
 class _LoginCard extends StatelessWidget {
   const _LoginCard({
     required this.hidePassword,
+    required this.isLoading,
+    required this.errorMessage,
+    required this.documentController,
+    required this.passwordController,
     required this.onTogglePassword,
     required this.onLogin,
   });
 
   final bool hidePassword;
+  final bool isLoading;
+  final String? errorMessage;
+  final TextEditingController documentController;
+  final TextEditingController passwordController;
   final VoidCallback onTogglePassword;
   final VoidCallback onLogin;
 
@@ -145,15 +203,17 @@ class _LoginCard extends StatelessWidget {
             size: 30,
           ),
           const SizedBox(height: 8),
-          const TextField(
+          TextField(
+            controller: documentController,
             keyboardType: TextInputType.number,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               hintText: 'Documento',
               prefixIcon: Icon(Icons.badge_outlined),
             ),
           ),
           const SizedBox(height: 18),
           TextField(
+            controller: passwordController,
             obscureText: hidePassword,
             decoration: InputDecoration(
               hintText: 'Clave',
@@ -169,12 +229,23 @@ class _LoginCard extends StatelessWidget {
               ),
             ),
           ),
+          if (errorMessage != null) ...[
+            const SizedBox(height: 16),
+            Text(
+              errorMessage!,
+              style: const TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             height: 50,
             child: FilledButton(
-              onPressed: onLogin,
+              onPressed: isLoading ? null : onLogin,
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFF5F72A6),
                 foregroundColor: Colors.white,
@@ -182,10 +253,19 @@ class _LoginCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              child: const Text(
-                'Iniciar Sesión',
-                style: TextStyle(fontWeight: FontWeight.w800),
-              ),
+              child: isLoading
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      'Iniciar Sesión',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
             ),
           ),
           const SizedBox(height: 12),
@@ -193,7 +273,7 @@ class _LoginCard extends StatelessWidget {
             width: double.infinity,
             height: 48,
             child: OutlinedButton(
-              onPressed: () {},
+              onPressed: isLoading ? null : () {},
               style: OutlinedButton.styleFrom(
                 foregroundColor: const Color(0xFF255D72),
                 side: BorderSide(color: Colors.white.withOpacity(0.8)),
