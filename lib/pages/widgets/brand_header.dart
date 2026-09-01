@@ -15,12 +15,12 @@ class BrandHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFFE7F7D9).withOpacity(0.78),
+        color: const Color(0xFFE7F7D9).withValues(alpha: 0.78),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.75)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.75)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),

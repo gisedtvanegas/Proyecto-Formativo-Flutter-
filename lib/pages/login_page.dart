@@ -188,12 +188,12 @@ class _LoginCard extends StatelessWidget {
       constraints: const BoxConstraints(maxWidth: 440),
       padding: const EdgeInsets.fromLTRB(22, 26, 22, 24),
       decoration: BoxDecoration(
-        color: const Color(0xFFC8DDED).withOpacity(0.9),
+        color: const Color(0xFFC8DDED).withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withOpacity(0.7)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.7)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF9BCB5C).withOpacity(0.32),
+            color: const Color(0xFF9BCB5C).withValues(alpha: 0.32),
             blurRadius: 34,
             offset: const Offset(0, 18),
           ),
@@ -281,7 +281,7 @@ class _LoginCard extends StatelessWidget {
               onPressed: isLoading ? null : () {},
               style: OutlinedButton.styleFrom(
                 foregroundColor: const Color(0xFF255D72),
-                side: BorderSide(color: Colors.white.withOpacity(0.8)),
+                side: BorderSide(color: Colors.white.withValues(alpha: 0.8)),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),

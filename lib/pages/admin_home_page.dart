@@ -149,12 +149,12 @@ class _AdminOption extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 176),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8F8D9).withOpacity(0.82),
+        color: const Color(0xFFE8F8D9).withValues(alpha: 0.82),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withOpacity(0.5)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.14),
+            color: Colors.black.withValues(alpha: 0.14),
             blurRadius: 22,
             offset: const Offset(0, 12),
           ),

@@ -23,9 +23,9 @@ class AppBackground extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF0C7385).withOpacity(0.62),
-              const Color(0xFFE7FFD2).withOpacity(0.86),
-              const Color(0xFF1C8B8D).withOpacity(0.58),
+              const Color(0xFF0C7385).withValues(alpha: 0.62),
+              const Color(0xFFE7FFD2).withValues(alpha: 0.86),
+              const Color(0xFF1C8B8D).withValues(alpha: 0.58),
             ],
           ),
         ),
