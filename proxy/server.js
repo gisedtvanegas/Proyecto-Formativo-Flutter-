@@ -20,7 +20,7 @@ app.use('/api', createProxyMiddleware({
   target: BACKEND_URL,
   changeOrigin: true, // Requerido para túneles HTTPS como ngrok o Railway
   pathRewrite: {
-    '^/api/Cafeteriatalleres': '', // Elimina el prefijo para que llame a la raíz de Railway (/Iniciar)
+    '^/Cafeteriatalleres': '', // Express ya retiró '/api'; aquí llega '/Cafeteriatalleres/...' → reenvía como '/Iniciar', '/ReservaUsuario', etc.
   },
   onProxyReq: (proxyReq, req, res) => {
     console.log(`[PROXY API] ${req.method} ${req.originalUrl} -> ${BACKEND_URL}${proxyReq.path}`);

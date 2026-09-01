@@ -73,6 +73,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.19.1"
+<<<<<<< HEAD
   convert:
     dependency: transitive
     description:
@@ -97,6 +98,16 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.4.1"
+=======
+  csslib:
+    dependency: transitive
+    description:
+      name: csslib
+      sha256: "09bad715f418841f976c77db72d5398dc1253c21fb9c0c7f0b0b985860b2d58e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.2"
+>>>>>>> origin/main
   fake_async:
     dependency: transitive
     description:
@@ -139,6 +150,7 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+<<<<<<< HEAD
   flutter_web_plugins:
     dependency: transitive
     description: flutter
@@ -168,6 +180,16 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.0"
+=======
+  html:
+    dependency: "direct main"
+    description:
+      name: html
+      sha256: "6d1264f2dffa1b1101c25a91dff0dc2daee4c18e87cd8538729773c073dbf602"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.15.6"
+>>>>>>> origin/main
   http:
     dependency: "direct main"
     description:
